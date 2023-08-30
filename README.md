@@ -1,4 +1,6 @@
-#Query Builder Description
+#Query Builder for SAP BO4 
+
+Description
 
 The SAP BO Query Builder is a tool used within the SAP Business Objects environment. Its main task is to retrieve information from the SAP BO repository using SQL queries. 
 
@@ -13,9 +15,9 @@ The following document contains instructions for installing and using the Python
 
 Prerequisite
 
-SAP BO Admin account
-Python 3.9 or higher on the machine
-Package: Selenium and Webdriver, BeautifulSoup4, Python Decoupler, Openpyxl (for more information, see Installation)
+- SAP BO4 Admin account
+- Python 3.9 or higher on the machine
+- Package: Selenium and Webdriver, BeautifulSoup4, Python Decoupler, Openpyxl (for more information, see Installation)
 
 
 Preparation
@@ -26,3 +28,8 @@ Preparation
 - Execute the script: > python main.py
 - This will create an Excel file SAPBOQueryResult.xlsx in the same folder.
 - To modify the SAP query, open the script Export_SAPQueryBuilder.py with an editor and edit the variable sqlst with your select statement. 
+
+
+Hint
+
+- This tool should also handle the Query Builder for SAP BO 3. The main difference between BO3 and BO4 is in the naming of the HTML tag elements. If you are using BO 3, please feel free to modify the configuration variables to suit your needs.
