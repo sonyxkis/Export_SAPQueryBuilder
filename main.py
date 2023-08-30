@@ -20,6 +20,7 @@ sqlst = ("SELECT Top 4000 "
 
 BASE_DIR = os.path.realpath(__file__)
 
+#Edit if necessary
 CONFIG = {
         'USERNAME' : config('QB_USERNAME'),
         'PASSWORD' : config('QB_PASSWORD'),
