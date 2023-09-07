@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
@@ -8,29 +9,31 @@ from decouple import config
 
 now = datetime.now()
 date_time = now.strftime("%Y.%m.%d")
+export_date_time = now.strftime("%Y_%m_%d")
 
 _number_of_objects = None
 
-sqlst = ("SELECT Top 4000 " 
+sqlst = ("SELECT Top 100 " 
               " SI_NEXTRUNTIME, SI_ANCESTOR, SI_KIND, SI_OWNER, SI_NAME, SI_CREATION_TIME,SI_LOCAL_FILEPATH, SI_UNIVERSE, SI_AUTHOR, SI_PARENT_FOLDER, SI_ID, SI_WEBI_DOC_PROPERTIES, SI_PROCESSINFO.SI_FULLCLIENTDATAPROVIDERS, "
               " SI_NEXTRUNTIME, SI_UNIVERSE, SI_CHILDREN, SI_UPDATE_TS, SI_RECURRING, SI_SCHEDULEINFO.SI_SCHEDULE_TYPE, SI_SCHEDULEINFO.SI_STARTTIME, SI_SCHEDULEINFO.SI_ENDTIME, SI_SCHEDULEINFO.SI_DESTINATIONS "
               " FROM CI_INFOOBJECTS "
-              " WHERE SI_KIND in ('FullClient','WebI','Excel') AND SI_RECURRING = 1 AND  (SI_AUTHOR = 'eisola' OR SI_OWNER = 'eisola')"
+              " WHERE SI_KIND in ('FullClient','WebI','Excel') AND SI_RECURRING = 1"
               " AND SI_NEXTRUNTIME > '%s'" % date_time )
 
 BASE_DIR = os.path.realpath(__file__)
 
-#Edit if necessary
 CONFIG = {
         'USERNAME' : config('QB_USERNAME'),
         'PASSWORD' : config('QB_PASSWORD'),
-        'EXPORTNAME_PATH' : BASE_DIR + 'SAPBOQueryResult.xlsx',
-        'URL' : 'http://ncvboxip4:8080/AdminTools/querybuilder/logonform.jsp',
+        'EXPORT_PATH' : BASE_DIR ,
+        'EXPORT_FILENAME' : 'SAPBOQuery_Export',
+        'EXPORT_FILEEXTENSION' : '.xlsx',
+        'URL' : 'http://XXXXSAPBO4:8080/AdminTools/querybuilder/logonform.jsp',
         'TITEL' : 'SAP BusinessObjects Business Intelligence platform - Query Builder',
         'SYS' : 'ncvboxip4:6400',
         'LOGON_CLICK' : "//input[@value='Log On']",
         'SEND_CLICK' : "//input[@value='Submit Query']",
-        'RESULT' : "http://ncvboxip4:8080/AdminTools/querybuilder/query.jsp",
+        'RESULT' : "http://XXXXSAPBO4:8080/AdminTools/querybuilder/query.jsp",
         'EXIT' : 'Exit'
 }
 
@@ -56,6 +59,7 @@ def prepareData(dict_data):
           dict_data.pop(rem)     
 
      df = pd.DataFrame(dict_data)   
+     print(df)
      return df
 
 #Process the source data into a value pair dictionary
@@ -111,6 +115,7 @@ def getSrouceDataFromQBO(sqlst):
      elem = driver.find_element(By.XPATH, CONFIG['SEND_CLICK']).click();
 
      driver.get(CONFIG['RESULT'])
+     time.sleep(2)
      sroucecode = driver.page_source
 
      driver.back()
@@ -121,7 +126,32 @@ def getSrouceDataFromQBO(sqlst):
      return sroucecode
      
 
-def __main__():
-     prepareData(readData(getSrouceDataFromQBO(sqlst))).to_excel(CONFIG['EXPORTNAME_PATH'])     
-    
-__main__()
+def main():
+     global sqlst
+     run_app = True
+     i = 0
+
+     while run_app:
+          fileexport = f"{CONFIG['EXPORT_FILENAME']}_{i}_{export_date_time}{CONFIG['EXPORT_FILEEXTENSION']}"
+          query_input = input("Enter your query, else leave empty default query will be executed: ")
+          
+          if query_input:
+               print(query_input)
+               sqlst = query_input
+          else:
+               print('Default query executed')
+          
+          prepareData(readData(getSrouceDataFromQBO(sqlst))).to_excel(str(fileexport)) 
+          print(f'File created: {fileexport}')
+          
+          end_input = input("Continue (y/n)?: ")
+
+          if end_input.lower() == 'n':
+               run_app = False
+          else:
+               i += 1
+          
+if __name__ == "__main__":
+    main()
+
+
